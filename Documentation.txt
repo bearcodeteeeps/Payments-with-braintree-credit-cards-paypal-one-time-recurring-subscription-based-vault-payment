@@ -31,3 +31,5 @@ Steps For payments with braintree
 => From Set Up Your Server  dropdown select Php
 
 => Click on Download Php library or download it using composer
+
+For further explanation please refer to the video -: 
