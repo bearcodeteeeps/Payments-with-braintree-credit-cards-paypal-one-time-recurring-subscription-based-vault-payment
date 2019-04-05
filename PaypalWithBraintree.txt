@@ -1,0 +1,66 @@
+**I am only showing you the tutorial of using PayPal with braintree integration and payment processing
+
+for using paypal with braintree you need to first go to your braintree control panel -> Processing and enable Paypal option and link your primary business paypal account having a developer application as you need to provide paypalEmail, paypalClientId, paypalClientSecret from your developer application to braintree when you click on link button on braintree
+
+ for sandbox paypal integration simply create a sandbox application on paypal and provide those credentials, to create one visit paypal developers or browse https://developer.paypal.com/developer/accounts/
+
+after login in click on My apps and credentials, create a application get the provided email, client id and secret and paste in to braintree
+
+for creating test users like fake paypal users  (clients or demo users) with money in cards,  go sandbox -> accounts and create a account, select country, account type, email address, password, type of preadded credit card and wallet amount etc. Now use these created logins only with your sandbox integration
+
+
+In paypal there 2 two different forms of integration worth noting, one is checkout which is like instant checkout and mostly used for one time payments and another one used is for recurring auto charge payments where your cron jobs or automated scripts directly charge the paypal account with the used of tokens with involving the client directly (vault payments)
+
+Instant checkout is similar to saving users token for future automated payments (vault), you just have to change a single parameter in your pre provided javascript and then you are ready to go, for now just copy paste the same code from the given by paypal where they are have documented the flow for vault check using paypal
+
+https://www.braintreepayments.com/features/paypal
+
+for getting paypal button like pay with paypal, and getting the clientAuthorizationCode use the below link
+https://developers.braintreepayments.com/guides/paypal/client-side/javascript/v3
+
+get your javascript code here for vault payments
+ https://developers.braintreepayments.com/guides/paypal/vault/javascript/v3
+
+In the script you get over here make sure you change the env
+ paypal.Button.render({
+      env: 'production', // or 'sandbox'
+
+      to sandbox
+
+Also you need to generate client token on your server for this to work
+https://developers.braintreepayments.com/start/hello-server/php#generate-a-client-token
+
+$clientToken = $gateway->clientToken()->generate()
+
+Once you get you button PayPal Checkout
+
+Now lets go through the code, basically i suggest ajax, like what happens when user authorizes your payment request you get "nonce" which is only valid for a few minutes, you take the nonce pass it to your chargePaypal function where it takes the payment and store the payment method in valut and then gives you back the token for further automated payments also known as "Vault Payments"
+
+      onAuthorize: function (data, actions) {
+        return paypalCheckoutInstance.tokenizePayment(data, function (err, payload) {
+          // Submit `payload.nonce` to your server.
+        });
+      },
+
+
+find the above code in your script and pass the nonce to your server using ajax
+
+
+Find the below snippet and specify your payment details
+
+      payment: function () {
+        return paypalCheckoutInstance.createPayment({
+          // Your PayPal options here. For available options, see
+          // http://braintree.github.io/braintree-web/current/PayPalCheckout.html#createPayment
+        });
+      },
+
+
+ return paypalCheckoutInstance.createPayment({
+        flow: 'vault',
+        currency: 'USD',
+        amount: '10.00',
+      });
+
+
+If flow is sepcified as checkout then you will get nonce but you won't be able to store the payment in vault in braintree, so for our tutorial purpose i will show you vault type of payments
